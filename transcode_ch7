@@ -1,0 +1,117 @@
+#!/bin/bash
+
+if [ $# = 0 ]; then
+    echo Usage: transcode_ch7 [options] files...
+    echo Options: [keepaudio|dualaudio|dualreverse|hardsrt|hardass][sub=#][--externalsrt]
+    exit
+fi
+
+args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt,hardass,sub:,externalsrt -- "$@")
+
+#defaults
+vrate="640k"
+audioopts="-c:a libvorbis -b:a 128k"
+mapopts=""
+filteropts=""
+subnum=0
+
+eval set -- ${args%%-- *}
+# Processing options
+for a in "$@"
+do
+    case $a in
+	"--keepaudio")
+	    audioopts="-c:a copy"
+	    ;;
+	"--dualaudio")
+	    vrate="512k"
+	    mapopts="-map 0:v -map 0:a"
+	    bEncodeKate=1
+	    ;;
+	"--dualreverse")
+	    vrate="512k"
+	    mapopts="-map 0:v -map 0:a:1 -map 0:a:0"
+	    bEncodeKate=1
+	    ;;
+	"--hardsrt")
+	    bOverlaySRT=1
+	    ;;
+	"--hardass")
+	    bOverlayASS=1
+	    ;;
+	"--sub")
+	    option=subnum
+	    ;;
+	"--externalsrt")
+	    bExtSRT=1
+	    ;;
+	*)
+	    if [ $option ]; then
+		eval ${option}=${a}
+		unset option
+	    else
+		echo Unsupported option: $a
+	    fi
+	    ;;
+    esac
+done
+
+eval set -- ${args##*-- }
+# Transcoding files
+for f in "$@"
+do
+    fname=${f##*/}         # remove path
+    fname=${fname%.*}      # remove extension
+    vidname=${fname// /_}  # replace spaces
+    final=${vidname}.ogv
+
+    fdir=${f%/*}
+
+    srtfile=${vidname}.srt
+    ssafile=${vidname}.ssa
+    subfile=${vidname}.kate
+    avfile=${vidname}.ogg
+    output=$final
+
+    echo "Transcoding $f to $final"
+
+    if [ $bExtSRT ]; then
+	srtfile="${fname}.srt"
+    fi
+
+    if [ $bEncodeKate ]; then
+	if [ ! $bExtSRT ]; then
+	    ffmpeg -i "$f" -map 0:s:${subnum} -c:s srt -v error "$srtfile"
+	fi
+	kateenc -t srt -c SUB -l en -M -o "$subfile" "$srtfile"
+	output=$avfile
+    fi
+
+    srtfileEsc=$(printf '%q' "${srtfile}")
+    ssafileEsc=$(printf '%q' "${ssafile}")
+    if [ $bOverlaySRT ]; then
+	if [ ! $bExtSRT ]; then	
+	    ffmpeg -i "$f" -map 0:s:${subnum} -c:s copy -v error "$srtfile"
+	fi
+	filteropts="-vf subtitles=${srtfileEsc}"
+    fi
+    if [ $bOverlayASS ]; then
+	ffmpeg -i "$f" -map 0:s:${subnum} -c:s copy -v error "$ssafile"
+	filteropts="-vf ass=${ssafileEsc}"
+    fi
+
+    ffmpeg -i "$f" -c:v libtheora -b:v ${vrate} -an -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v error -y /dev/null
+    ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v error "$output"
+    rm "${vidname}"*.log
+
+    if [ $bEncodeKate ]; then
+	oggz merge -o "$final" "$avfile" "$subfile"
+	rm "$subfile" "$avfile"
+    fi
+    if [[ $bEncodeKate || $bOverlaySRT ]] && [[ ! $bExtSRT ]]; then
+	rm "$srtfile"
+    fi
+    if [ $bOverlayASS ]; then
+	rm "$ssafile"
+    fi
+done
