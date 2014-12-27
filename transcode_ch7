@@ -76,7 +76,7 @@ do
     echo "Transcoding $f to $final"
 
     if [ $bExtSRT ]; then
-	srtfile="${fname}.srt"
+	srtfile="${fdir}/${fname}.srt"
     fi
 
     if [ $bEncodeKate ]; then
