@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for f in "$@"
+do
+    echo $f
+    oggz info $f | grep Duration
+    echo -n "Minutes: "
+    read m
+    mv "$f" "${f%.*}-${m}m.${f##*.}"
+done
