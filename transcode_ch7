@@ -12,7 +12,7 @@ args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt,hardass,sub:,exte
 vrate="640k"
 audioopts="-c:a libvorbis -b:a 128k"
 mapopts=""
-filteropts=""
+filteropts=()
 subnum=0
 
 eval set -- ${args%%-- *}
@@ -87,21 +87,19 @@ do
 	output=$avfile
     fi
 
-    srtfileEsc=$(printf '%q' "${srtfile}")
-    ssafileEsc=$(printf '%q' "${ssafile}")
     if [ $bOverlaySRT ]; then
 	if [ ! $bExtSRT ]; then	
 	    ffmpeg -i "$f" -map 0:s:${subnum} -c:s copy -v error "$srtfile"
 	fi
-	filteropts="-vf subtitles=${srtfileEsc}"
+	filteropts=("-vf" "subtitles=${srtfile}")
     fi
     if [ $bOverlayASS ]; then
 	ffmpeg -i "$f" -map 0:s:${subnum} -c:s copy -v error "$ssafile"
-	filteropts="-vf ass=${ssafileEsc}"
+	filteropts=("-vf" "ass=${ssafile}")
     fi
 
     ffmpeg -i "$f" -c:v libtheora -b:v ${vrate} -an -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v error -y /dev/null
-    ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v error "$output"
+    ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v error "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
