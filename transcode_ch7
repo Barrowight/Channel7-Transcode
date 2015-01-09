@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ $# = 0 ]; then
-    echo Usage: transcode_ch7 [options] files...
-    echo Options: [--keepaudio|--dualaudio|--dualreverse|--hardsrt|--hardass][--sub=#][--externalsrt]
+    echo 'Usage: transcode_ch7 [options] files...'
+    echo 'Options: [--keepaudio|--dualaudio|--dualreverse|--hardsrt|--hardass][--sub=#][--externalsrt]'
     exit
 fi
 
