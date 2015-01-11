@@ -2,9 +2,19 @@
 
 for f in "$@"
 do
-    echo $f
-    oggz info $f | grep Duration
-    echo -n "Minutes: "
-    read m
-    mv "$f" "${f%.*}-${m}m.${f##*.}"
+    echo -n "$f "
+    duration=$(oggz info "$f" | grep Duration)
+    h=$(echo $duration | awk -F: '{print $2}')
+    m=$(echo $duration | awk -F: '{print $3}')
+    s=$(echo $duration | awk -F: '{print $4}')
+    h=${h##*0}
+    if [[ -n $h ]]; then
+	h="${h}h"
+    fi
+    if [ ${s%.*} -gt 20 ]; then
+       let "m=m+1"
+    fi
+    newname="${f%.*}-${h}${m}m.${f##*.}"
+    echo '->' $newname
+    mv "$f" "$newname"
 done
