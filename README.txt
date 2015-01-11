@@ -15,7 +15,7 @@ Options: [--keepaudio|--dualaudio|--dualreverse|--hardsrt|--hardass][--sub=#][--
 ogg-rename-helper
 Depends: oggz-tools
 Usage: ogg-rename-helper files...
-  Prompts you to type in the number of minutes corresponding to video length.
+  Appends video duration to file names.
 
 exec_after_transcode
 Usage: exec_after_transcode <command to execute>
