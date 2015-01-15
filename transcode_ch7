@@ -2,11 +2,11 @@
 
 if [ $# = 0 ]; then
     echo 'Usage: transcode_ch7 [options] files...'
-    echo 'Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt]'
+    echo 'Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt][--outdir=<path>]'
     exit
 fi
 
-args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt::,hardass::,sub:,externalsrt -- "$@")
+args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt::,hardass::,sub:,externalsrt,outdir: -- "$@")
 
 #defaults
 vrate="640k"
@@ -14,6 +14,7 @@ audioopts="-c:a libvorbis -b:a 128k"
 mapopts=""
 filteropts=()
 subnum=0
+outdir=.
 
 eval set -- ${args%%-- *}
 # Processing options
@@ -47,6 +48,9 @@ do
 	"--externalsrt")
 	    bExtSRT=1
 	    ;;
+	"--outdir")
+	    option=outdir
+	    ;;
 	*)
 	    if [ $option ]; then
 		if [ -n "$a" ]; then
@@ -67,14 +71,14 @@ do
     fname=${f##*/}         # remove path
     fname=${fname%.*}      # remove extension
     vidname=${fname// /_}  # replace spaces
-    final=${vidname}.ogv
+    final=${outdir}/${vidname}.ogv
 
     fdir=${f%/*}
 
-    srtfile=${vidname}.srt
-    ssafile=${vidname}.ssa
-    subfile=${vidname}.kate
-    avfile=${vidname}.ogg
+    srtfile=${outdir}/${vidname}.srt
+    ssafile=${outdir}/${vidname}.ssa
+    subfile=${outdir}/${vidname}.kate
+    avfile=${outdir}/${vidname}.ogg
     output=$final
 
     echo "Transcoding $f to $final"
