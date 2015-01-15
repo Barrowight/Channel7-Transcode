@@ -2,11 +2,11 @@
 
 if [ $# = 0 ]; then
     echo 'Usage: transcode_ch7 [options] files...'
-    echo 'Options: [--keepaudio|--dualaudio|--dualreverse|--hardsrt|--hardass][--sub=#][--externalsrt]'
+    echo 'Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt]'
     exit
 fi
 
-args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt,hardass,sub:,externalsrt -- "$@")
+args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt::,hardass::,sub:,externalsrt -- "$@")
 
 #defaults
 vrate="640k"
@@ -34,10 +34,12 @@ do
 	    bEncodeKate=1
 	    ;;
 	"--hardsrt")
-	    bOverlaySRT=1
+	    OverlaySRT=0
+	    option=OverlaySRT
 	    ;;
 	"--hardass")
-	    bOverlayASS=1
+	    OverlayASS=0
+	    option=OverlayASS
 	    ;;
 	"--sub")
 	    option=subnum
@@ -47,7 +49,9 @@ do
 	    ;;
 	*)
 	    if [ $option ]; then
-		eval ${option}=${a}
+		if [ -n "$a" ]; then
+		    eval ${option}=${a}
+		fi
 		unset option
 	    else
 		echo Unsupported option: $a
@@ -87,14 +91,14 @@ do
 	output=$avfile
     fi
 
-    if [ $bOverlaySRT ]; then
+    if [ $OverlaySRT ]; then
 	if [ ! $bExtSRT ]; then	
-	    ffmpeg -i "$f" -map 0:s:${subnum} -c:s copy -v error "$srtfile"
+	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v error "$srtfile"
 	fi
 	filteropts=("-vf" "subtitles=${srtfile}")
     fi
-    if [ $bOverlayASS ]; then
-	ffmpeg -i "$f" -map 0:s:${subnum} -c:s copy -v error "$ssafile"
+    if [ $OverlayASS ]; then
+	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v error "$ssafile"
 	filteropts=("-vf" "ass=${ssafile}")
     fi
 
@@ -106,10 +110,10 @@ do
 	oggz merge -o "$final" "$avfile" "$subfile"
 	rm "$subfile" "$avfile"
     fi
-    if [[ $bEncodeKate || $bOverlaySRT ]] && [[ ! $bExtSRT ]]; then
+    if [[ $bEncodeKate || $OverlaySRT ]] && [[ ! $bExtSRT ]]; then
 	rm "$srtfile"
     fi
-    if [ $bOverlayASS ]; then
+    if [ $OverlayASS ]; then
 	rm "$ssafile"
     fi
 done
