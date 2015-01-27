@@ -135,7 +135,7 @@ do
 	oggz merge -o "$final" "$avfile" "$subfile"
 	rm "$subfile" "$avfile"
     fi
-    if [[ $bEncodeKate || $OverlaySRT ]] && [[ ! $bExtSRT ]]; then
+    if [[ -f "$srtfile" && ! $bExtSRT ]]; then
 	rm "$srtfile"
     fi
     if [ $OverlayASS ]; then
