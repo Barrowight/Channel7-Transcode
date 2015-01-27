@@ -1,12 +1,26 @@
 #!/bin/bash
 
+gst_dvd2kate () {
+    ext=${1##*.}
+    case $ext in
+	"mkv")
+	    gstdemux=matroskademux
+	    ;;
+	*)
+	    echo "This script does not support $ext files with dvdsub"
+	    return
+	    ;;
+    esac
+    gst-launch-1.0 -q filesrc location="$1" ! $gstdemux ! dvdsubparse ! kateenc category=spu-subtitles ! oggmux ! filesink location="$2"
+}
+
 if [ $# = 0 ]; then
     echo 'Usage: transcode_ch7 [options] files...'
-    echo 'Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt][--outdir=<path>]'
+    echo 'Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt][--dvdsub][--outdir=<path>]'
     exit
 fi
 
-args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt::,hardass::,sub:,externalsrt,outdir: -- "$@")
+args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt::,hardass::,sub:,externalsrt,dvdsub,outdir: -- "$@")
 
 #defaults
 vrate="640k"
@@ -48,6 +62,9 @@ do
 	"--externalsrt")
 	    bExtSRT=1
 	    ;;
+	"--dvdsub")
+	    bDVDsub=1
+	    ;;
 	"--outdir")
 	    option=outdir
 	    ;;
@@ -88,10 +105,14 @@ do
     fi
 
     if [ $bEncodeKate ]; then
-	if [ ! $bExtSRT ]; then
-	    ffmpeg -i "$f" -map 0:s:${subnum} -c:s srt -v error "$srtfile"
+	if [ $bDVDsub ]; then
+	    gst_dvd2kate "$f" "$subfile"
+	else
+	    if [ ! $bExtSRT ]; then
+		ffmpeg -i "$f" -map 0:s:${subnum} -c:s srt -v error "$srtfile"
+	    fi
+	    kateenc -t srt -c SUB -l en -M -o "$subfile" "$srtfile"
 	fi
-	kateenc -t srt -c SUB -l en -M -o "$subfile" "$srtfile"
 	output=$avfile
     fi
 

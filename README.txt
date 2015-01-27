@@ -1,7 +1,7 @@
 transcode_ch7
 Depends: ffmpeg libkate oggz-tools
 Usage: transcode_ch7 [options] files...
-Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt][--outdir=<path>]
+Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--externalsrt][--dvdsub][--outdir=<path>]
   keepaudio:    Just copy audio stream. Use this with videos that already have 
     audio encoded in vorbis (e.g. YouTube videos).
   dualaudio:    Encodes all audio streams from source in order.
@@ -14,7 +14,12 @@ Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--
     include with dualaudio (default: 0).
   externalsrt:  Use separate SRT files from source. Subtitle files must have the
     same name as video source file except for file extension.
+  dvdsub:       Transcode source dvdsub into kate. (Note: This currently
+    requires a custom build of gstreamer 1.4.5 with patches from their bug
+    tracker [1].
   outdir:       Set output directory.
+
+[1] https://bugzilla.gnome.org/show_bug.cgi?id=740565
 
 ogg-rename-helper
 Depends: oggz-tools
