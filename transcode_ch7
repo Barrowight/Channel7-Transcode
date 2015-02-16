@@ -7,7 +7,7 @@ gst_softsub () {
 	    gstdemux=matroskademux
 	    ;;
 	*)
-	    echo "This script does not support $ext files with dvdsub"
+	    echo "This script does not support $ext files with gstreamer"
 	    return
 	    ;;
     esac
