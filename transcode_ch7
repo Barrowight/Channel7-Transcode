@@ -131,8 +131,14 @@ do
 	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v error "$ssafile"
 	filteropts=("-vf" "ass=${ssafile}")
     fi
+    i=0
+    for o in "${filteropts[@]}"
+    do
+	filteropts[$i]=$(printf '%q' "$o")
+	let i+=1
+    done
 
-    ffmpeg -i "$f" -c:v libtheora -b:v ${vrate} -an -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v error -y /dev/null
+    ffmpeg -i "$f" "${filteropts[@]}" -c:v libtheora -b:v ${vrate} -an -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v error -y /dev/null
     ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v error "$output"
     rm "${vidname}"*.log
 
