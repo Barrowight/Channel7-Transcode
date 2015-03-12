@@ -29,6 +29,7 @@ mapopts=""
 filteropts=()
 subnum=0
 outdir=.
+loglvl=error
 
 eval set -- ${args%%-- *}
 # Processing options
@@ -114,7 +115,7 @@ do
 	    gst_softsub ssaparse "$f" "$subfile"
 	else
 	    if [ ! $bExtSRT ]; then
-		ffmpeg -i "$f" -map 0:s:${subnum} -c:s srt -v error "$srtfile"
+		ffmpeg -i "$f" -map 0:s:${subnum} -c:s srt -v $loglvl "$srtfile"
 	    fi
 	    kateenc -t srt -c SUB -l en -M -o "$subfile" "$srtfile"
 	fi
@@ -123,12 +124,12 @@ do
 
     if [ $OverlaySRT ]; then
 	if [ ! $bExtSRT ]; then	
-	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v error "$srtfile"
+	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v $loglvl "$srtfile"
 	fi
 	filteropts=("-vf" "subtitles=${srtfile}")
     fi
     if [ $OverlayASS ]; then
-	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v error "$ssafile"
+	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v $loglvl "$ssafile"
 	filteropts=("-vf" "ass=${ssafile}")
     fi
     i=0
@@ -138,8 +139,8 @@ do
 	let i+=1
     done
 
-    ffmpeg -i "$f" "${filteropts[@]}" -c:v libtheora -b:v ${vrate} -an -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v error -y /dev/null
-    ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v error "$output"
+    ffmpeg -i "$f" "${filteropts[@]}" -c:v libtheora -b:v ${vrate} -an -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
+    ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v $loglvl "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
