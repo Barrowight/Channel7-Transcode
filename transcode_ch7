@@ -58,6 +58,7 @@ do
 	    option=OverlayASS
 	    ;;
 	"--sub")
+	    bEncodeKate=1
 	    option=subnum
 	    ;;
 	"--externalsrt")
