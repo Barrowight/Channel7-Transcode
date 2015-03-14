@@ -7,7 +7,12 @@ do
     h=$(echo $duration | awk -F: '{print $2}')
     m=$(echo $duration | awk -F: '{print $3}')
     s=$(echo $duration | awk -F: '{print $4}')
-    h=${h##*0}
+
+    shopt -s extglob     # Turn on extended globbing.
+    h=${h##+([ 0])}         # strip longest matching series of 0's.
+    m=${m##+([ 0])}
+    shopt -u extglob     # Turn off extended globbing.
+
     if [[ -n $h ]]; then
 	h="${h}h"
     fi
