@@ -1,11 +1,12 @@
 transcode_ch7
 Depends: ffmpeg libkate oggz-tools
 Usage: transcode_ch7 [options] files...
-Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]
-  keepaudio:    Just copy audio stream. Use this with videos that already have 
-    audio encoded in vorbis (e.g. YouTube videos).
+Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]
   dualaudio:    Encodes all audio streams from source in order.
   dualreverse:  Encode both audio streams but swap the order.
+  keepaudio:    Just copy audio stream. Use this with videos that already have 
+    audio encoded in vorbis (e.g. YouTube videos).
+  keeprevaudio: Copy and swap the first two audio streams.
   hardsrt:      Overlay source SRT subtitles into video stream. Optionally
     specify the subtitle stream number.
   hardass:      Overlay source SSA subtitles into video stream. Optionally

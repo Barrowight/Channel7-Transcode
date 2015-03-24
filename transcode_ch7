@@ -16,11 +16,11 @@ gst_softsub () {
 
 if [ $# = 0 ]; then
     echo 'Usage: transcode_ch7 [options] files...'
-    echo 'Options: [--keepaudio|--dualaudio|--dualreverse][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]'
+    echo 'Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]'
     exit
 fi
 
-args=$(getopt -o '' -l keepaudio,dualaudio,dualreverse,hardsrt::,hardass::,sub:,softdvdsub,softass,externalsrt,outdir: -- "$@")
+args=$(getopt -o '' -l dualaudio,dualreverse,keepaudio,keeprevaudio,hardsrt::,hardass::,sub:,softdvdsub,softass,externalsrt,outdir: -- "$@")
 
 #defaults
 vrate="640k"
@@ -37,9 +37,6 @@ eval set -- ${args%%-- *}
 for a in "$@"
 do
     case $a in
-	"--keepaudio")
-	    audioopts="-c:a copy"
-	    ;;
 	"--dualaudio")
 	    vrate="512k"
 	    mapopts="-map 0:v -map 0:a"
@@ -49,6 +46,13 @@ do
 	    vrate="512k"
 	    mapopts="-map 0:v -map 0:a:1 -map 0:a:0"
 	    bEncodeKate=1
+	    ;;
+	"--keepaudio")
+	    audioopts="-c:a copy"
+	    ;;
+	"--keeprevaudio")
+	    audioopts="-c:a copy"
+	    mapopts="-map 0:v -map 0:a:1 -map 0:a:0"
 	    ;;
 	"--hardsrt")
 	    OverlaySRT=0
