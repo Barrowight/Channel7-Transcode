@@ -64,6 +64,7 @@ do
 	    ;;
 	"--sub")
 	    bEncodeKate=1
+	    bSub=1
 	    option=subnum
 	    ;;
 	"--externalsrt")
@@ -116,7 +117,9 @@ do
 
     if [ $bEncodeKate ]; then
 	if [ $bDVDsub ]; then
-	    gst_softsub dvdsubparse "$f" "$subfile"
+	    if [ $bSub ]; then ffmpeg -i "$f" -map 0:v -map 0:s:${subnum} -c:v copy -c:s copy -v $loglvl ${vidname}.1sub.mkv; fi
+	    gst_softsub dvdsubparse "${vidname}.1sub.mkv" "$subfile"
+	    if [ $bSub ]; then rm ${vidname}.1sub.mkv; fi
 	elif [ $bSoftASS ]; then
 	    gst_softsub ssaparse "$f" "$subfile"
 	else
