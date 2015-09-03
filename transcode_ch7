@@ -1,5 +1,19 @@
 #!/bin/bash
 
+optlist () {
+    local optlist_more
+    local optlist_out
+    local array=("${!1}")
+    for o in "${array[@]}"; do
+	if [ $optlist_more ]; then
+	    optlist_out+=','
+	fi
+	optlist_out+=$(printf '%q' "$o")
+	optlist_more=1
+    done
+    echo "$optlist_out"
+}
+
 gst_softsub () {
     ext=${2##*.}
     case $ext in
@@ -26,7 +40,6 @@ args=$(getopt -o '' -l dualaudio,dualreverse,keepaudio,keeprevaudio,hardsrt::,ha
 vrate="640k"
 audioopts="-c:a libvorbis -b:a 128k"
 mapopts="-metadata:s:a title=" # strip audio titles
-filteropts=()
 subnum=0
 outdir=.
 loglvl=error
@@ -109,6 +122,9 @@ do
     avfile=${outdir}/${vidname}.ogg
     output=$final
 
+    filters=()
+    filteropts=""
+
     echo "Transcoding $f to $final"
 
     if [ $bExtSRT ]; then
@@ -139,21 +155,20 @@ do
 	if [ ! $bExtSRT ]; then	
 	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v $loglvl "$srtfile"
 	fi
-	filteropts=("-vf" "subtitles=${srtfile}")
+	filters[${#filters[@]}]="subtitles=${srtfile}"
     fi
     if [ $OverlayASS ]; then
 	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v $loglvl "$ssafile"
-	filteropts=("-vf" "ass=${ssafile}")
+	filters[${#filters[@]}]="ass=${ssafile}"
     fi
-    i=0
-    for o in "${filteropts[@]}"
-    do
-	filteropts[$i]=$(printf '%q' "$o")
-	let i+=1
-    done
 
-    ${nicer} ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
-    ${nicer} ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v $loglvl "$output"
+    if [ ${#filters} -gt 0 ]; then
+	filteropts="-vf $(optlist filters[@])"
+	echo "${filteropts}"
+    fi
+
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v $loglvl "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
