@@ -39,7 +39,6 @@ args=$(getopt -o '' -l dualaudio,dualreverse,keepaudio,keeprevaudio,hardsrt::,ha
 #defaults
 vrate="640k"
 audioopts="-c:a libvorbis -b:a 128k"
-mapopts="-metadata:s:a title=" # strip audio titles
 subnum=0
 outdir=.
 loglvl=error
@@ -168,7 +167,7 @@ do
     fi
 
     ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
-    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata title="$fname" -v $loglvl "$output"
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
