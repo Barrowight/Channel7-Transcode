@@ -61,6 +61,7 @@ do
 	    ;;
 	"--keepaudio")
 	    audioopts="-c:a copy"
+	    mapopts="-map 0:a -map 0:v"
 	    ;;
 	"--keeprevaudio")
 	    audioopts="-c:a copy"
@@ -163,7 +164,6 @@ do
 
     if [ ${#filters} -gt 0 ]; then
 	filteropts="-vf $(optlist filters[@])"
-	echo "${filteropts}"
     fi
 
     ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
