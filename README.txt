@@ -1,5 +1,5 @@
 transcode_ch7
-Depends: ffmpeg libkate oggz-tools
+Depends: ffmpeg libkate oggz-tools (getopt from util-linux)
 Usage: transcode_ch7 [options] files...
 Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]
   dualaudio:    Encodes all audio streams from source in order.
