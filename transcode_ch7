@@ -114,7 +114,7 @@ do
     vidname=${fname// /_}  # replace spaces
     final=${outdir}/${vidname}.ogv
 
-    fdir=${f%/*}
+    fdir=$(dirname "$f")
 
     srtfile=${outdir}/${vidname}.srt
     ssafile=${outdir}/${vidname}.ssa
