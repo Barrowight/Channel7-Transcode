@@ -1,17 +1,18 @@
 #!/bin/bash
 
-optlist () {
-    local optlist_more
-    local optlist_out
-    local array=("${!1}")
-    for o in "${array[@]}"; do
-	if [ $optlist_more ]; then
-	    optlist_out+=','
-	fi
-	optlist_out+=$(printf '%q' "$o")
-	optlist_more=1
+echo_args () { #for testing
+    for a in "$@"; do
+	echo $a
     done
-    echo "$optlist_out"
+}
+
+append_filter () {
+    if [ -z "$filteropts" ]; then
+	filteropts[0]="-vf"
+    else
+	filteropts[1]+=","
+    fi
+    filteropts[1]+="$1" #$(printf '%q' "$1")
 }
 
 gst_softsub () {
@@ -122,8 +123,7 @@ do
     avfile=${outdir}/${vidname}.ogg
     output=$final
 
-    filters=()
-    filteropts=""
+    filteropts=
 
     echo "Transcoding $f to $final"
 
@@ -155,19 +155,15 @@ do
 	if [ ! $bExtSRT ]; then	
 	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v $loglvl "$srtfile"
 	fi
-	filters[${#filters[@]}]="subtitles=${srtfile}"
+	append_filter "subtitles='${srtfile}'"
     fi
     if [ $OverlayASS ]; then
 	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v $loglvl "$ssafile"
-	filters[${#filters[@]}]="ass=${ssafile}"
+	append_filter "ass=${ssafile}"
     fi
 
-    if [ ${#filters} -gt 0 ]; then
-	filteropts="-vf $(optlist filters[@])"
-    fi
-
-    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
-    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
+    ${nicer} ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
+    ${nicer} ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
