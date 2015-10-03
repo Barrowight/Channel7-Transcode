@@ -12,7 +12,7 @@ append_filter () {
     else
 	filteropts[1]+=","
     fi
-    filteropts[1]+="$1" #$(printf '%q' "$1")
+    filteropts[1]+=$(printf "%q" "$1")
 }
 
 gst_softsub () {
@@ -128,7 +128,7 @@ do
     echo "Transcoding $f to $final"
 
     if [ $bExtSRT ]; then
-	srtfile="${fdir}/${fname}.srt"
+	cp "${fdir}/${fname}.srt" "$srtfile"
     fi
 
     if [ $bEncodeKate ]; then
@@ -155,22 +155,22 @@ do
 	if [ ! $bExtSRT ]; then	
 	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v $loglvl "$srtfile"
 	fi
-	append_filter "subtitles='${srtfile}'"
+	append_filter "subtitles=${srtfile}"
     fi
     if [ $OverlayASS ]; then
 	ffmpeg -i "$f" -map 0:s:${OverlayASS} -c:s copy -v $loglvl "$ssafile"
 	append_filter "ass=${ssafile}"
     fi
 
-    ${nicer} ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
-    ${nicer} ffmpeg -i "$f" ${mapopts} "${filteropts[@]}" -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
 	oggz merge -o "$final" "$avfile" "$subfile"
 	rm "$subfile" "$avfile"
     fi
-    if [[ -f "$srtfile" && ! $bExtSRT ]]; then
+    if [[ -f "$srtfile" ]]; then
 	rm "$srtfile"
     fi
     if [ $OverlayASS ]; then
