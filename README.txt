@@ -1,7 +1,7 @@
 transcode_ch7
 Depends: ffmpeg libkate oggz-tools (getopt from util-linux) (dirname from GNU core-utils)
 Usage: transcode_ch7 [options] files...
-Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]
+Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>][--scale]
   dualaudio:    Encodes all audio streams from source in order.
   dualreverse:  Encode both audio streams but swap the order.
   keepaudio:    Just copy audio stream. Use this with videos that already have 
@@ -20,6 +20,7 @@ Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--
   externalsrt:  Use separate SRT files from source. Subtitle files must have the
     same name as video source file except for file extension.
   outdir:       Set output directory.
+  scale:	Scale to pixel height of 480 (DVD resolution)
 
 [1] https://bugzilla.gnome.org/show_bug.cgi?id=740565
 

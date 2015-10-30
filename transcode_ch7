@@ -31,11 +31,11 @@ gst_softsub () {
 
 if [ $# = 0 ]; then
     echo 'Usage: transcode_ch7 [options] files...'
-    echo 'Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>]'
+    echo 'Options: [--dualaudio|--dualreverse|--keepaudio|--keeprevaudio][--hardsrt[=#]|--hardass[=#]][--sub=#][--softdvdsub|--softass][--externalsrt][--outdir=<path>][--scale]'
     exit
 fi
 
-args=$(getopt -o '' -l dualaudio,dualreverse,keepaudio,keeprevaudio,hardsrt::,hardass::,sub:,softdvdsub,softass,externalsrt,outdir: -- "$@")
+args=$(getopt -o '' -l dualaudio,dualreverse,keepaudio,keeprevaudio,hardsrt::,hardass::,sub:,softdvdsub,softass,externalsrt,outdir:,scale -- "$@")
 
 #defaults
 vrate="640k"
@@ -93,6 +93,9 @@ do
 	"--outdir")
 	    option=outdir
 	    ;;
+	"--scale")
+	    scaleH=480
+	    ;;
 	*)
 	    if [ $option ]; then
 		if [ -n "$a" ]; then
@@ -131,6 +134,10 @@ do
 	cp "${fdir}/${fname}.srt" "$srtfile"
     fi
 
+    if [ $scaleH ]; then
+	append_filter "scale=-1:${scaleH}"
+    fi
+    
     if [ $bEncodeKate ]; then
 	if [ $bDVDsub ]; then
 	    DVDsubSrc="$f"
@@ -162,8 +169,8 @@ do
 	append_filter "ass=${ssafile}"
     fi
 
-    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
-    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
+#    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} ${audioopts} -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output" # -pass 2 -passlogfile "$vidname"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
