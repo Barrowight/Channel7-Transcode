@@ -142,11 +142,12 @@ do
 	if [ $bDVDsub ]; then
 	    DVDsubSrc="$f"
 	    if [ $bSub ]; then
-		ffmpeg -i "$f" -map 0:v -map 0:s:${subnum} -c:v copy -c:s copy -v $loglvl ${vidname}.1sub.mkv;
 		DVDsubSrc=${vidname}.1sub.mkv
+		ffmpeg -i "$f" -map 0:v -map 0:s:${subnum} -c:v copy -c:s dvdsub -v $loglvl ${DVDsubSrc};
 	    fi
 	    gst_softsub dvdsubparse "${DVDsubSrc}" "$subfile"
-	    if [ $bSub ]; then rm ${vidname}.1sub.mkv; fi
+	    if [ $bSub ]; then rm ${DVDsubSrc}; fi
+	    DVDsubSrc=
 	elif [ $bSoftASS ]; then
 	    gst_softsub ssaparse "$f" "$subfile"
 	else
@@ -169,8 +170,8 @@ do
 	append_filter "ass=${ssafile}"
     fi
 
-#    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
-    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} ${audioopts} -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output" # -pass 2 -passlogfile "$vidname"
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} -c:a copy -sn -pass 1 -passlogfile "$vidname" -f rawvideo -v $loglvl -y /dev/null
+    ${nicer} ffmpeg -i "$f" ${mapopts} ${filteropts[@]} -c:v libtheora -b:v ${vrate} ${audioopts} -pass 2 -passlogfile "$vidname" -metadata:s:v title="$fname" -metadata:s:a title= -v $loglvl "$output"
     rm "${vidname}"*.log
 
     if [ $bEncodeKate ]; then
