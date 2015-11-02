@@ -126,7 +126,7 @@ do
     avfile=${outdir}/${vidname}.ogg
     output=$final
 
-    filteropts=
+    filteropts=()
 
     echo "Transcoding $f to $final"
 
