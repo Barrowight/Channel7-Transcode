@@ -67,6 +67,7 @@ do
 	"--keeprevaudio")
 	    audioopts="-c:a copy"
 	    mapopts="-map 0:a:1 -map 0:a:0 -map 0:v"
+	    bEncodeKate=1
 	    ;;
 	"--hardsrt")
 	    OverlaySRT=0
