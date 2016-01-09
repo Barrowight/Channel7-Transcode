@@ -36,6 +36,9 @@ if [ $# = 0 ]; then
 fi
 
 args=$(getopt -o '' -l dualaudio,dualreverse,keepaudio,keeprevaudio,hardsrt::,hardass::,sub:,softdvdsub,softass,externalsrt,outdir:,scale -- "$@")
+if [ $? -ne 0 ]; then
+    exit
+fi
 
 #defaults
 vrate="640k"
@@ -105,6 +108,7 @@ do
 		unset option
 	    else
 		echo Unsupported option: $a
+		exit
 	    fi
 	    ;;
     esac
