@@ -166,7 +166,7 @@ do
 
     if [ $OverlaySRT ]; then
 	if [ ! $bExtSRT ]; then	
-	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v $loglvl "$srtfile"
+	    ffmpeg -i "$f" -map 0:s:${OverlaySRT} -c:s copy -v $loglvl -y "$srtfile"
 	fi
 	append_filter "subtitles=${srtfile}"
     fi
